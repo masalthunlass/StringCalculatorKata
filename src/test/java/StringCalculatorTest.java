@@ -25,4 +25,11 @@ public class StringCalculatorTest {
         final int sum = stringCalculator.add(givenOneNumber);
         assertThat(sum).isEqualTo(2);
     }
+
+    @Test
+    void add_should_return_the_sum_of_given_numbers_if_given_entry_contains_two_comma_separated_numbers() {
+        final String givenTwoSeparatedNumbers = "2,3";
+        final int sum = stringCalculator.add(givenTwoSeparatedNumbers);
+        assertThat(sum).isEqualTo(5);
+    }
 }
