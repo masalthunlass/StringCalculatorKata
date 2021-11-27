@@ -15,7 +15,14 @@ public class StringCalculatorTest {
     @Test
     void add_should_return_0_for_empty_entry() {
         final String emptyString = "";
-        final int result = stringCalculator.add(emptyString);
-        assertThat(result).isEqualTo(0);
+        final int sum = stringCalculator.add(emptyString);
+        assertThat(sum).isEqualTo(0);
+    }
+
+    @Test
+    void add_should_return_given_entry_if_contains_only_one_number() {
+        final String givenOneNumber = "2";
+        final int sum = stringCalculator.add(givenOneNumber);
+        assertThat(sum).isEqualTo(2);
     }
 }
