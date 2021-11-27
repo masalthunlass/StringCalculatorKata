@@ -3,7 +3,7 @@ import java.util.Arrays;
 public class StringCalculator {
 
 
-    public static final String SEPARATOR = ",";
+    private static final String SEPARATOR = ",";
 
     int add(String commaSeparatedNumbers) {
         if (commaSeparatedNumbers.isBlank()) return 0;
