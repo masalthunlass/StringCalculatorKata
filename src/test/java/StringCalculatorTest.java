@@ -12,13 +12,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class StringCalculatorTest {
 
-    private StringCalculator stringCalculator;
     private static final String NEWLINE = System.lineSeparator();
+    private StringCalculator stringCalculator;
+
 
     @BeforeEach
     void setUp() {
-        stringCalculator = new StringCalculator();
+        stringCalculator = new StringCalculator(new Mapper());
     }
+
 
     @Test
     void add_should_return_0_for_empty_entry() {
@@ -43,18 +45,6 @@ public class StringCalculatorTest {
         );
     }
 
-    private static Stream<Arguments> givenCommaAndNewlineFollowingEachOther() {
-        return Stream.of(
-                Arguments.of("1" + NEWLINE + NEWLINE + "2,3"),
-                Arguments.of("1," + NEWLINE + "2,3"),
-                Arguments.of("1,,2,3"),
-                Arguments.of("," + NEWLINE + "2,3"),
-                Arguments.of("1,5," + NEWLINE),
-                Arguments.of("1," + NEWLINE + NEWLINE + NEWLINE + ",3"),
-                Arguments.of("1,,,,2,3")
-        );
-    }
-
     @ParameterizedTest
     @MethodSource("givenCommaSeparatedNumbers")
     void add_should_return_the_sum_of_given_numbers_if_given_entry_contains_comma_separated_numbers(String givenCommaSeparatedNumbers, int expectedResult) {
@@ -72,14 +62,45 @@ public class StringCalculatorTest {
         assertThat(sum).isEqualTo(6);
     }
 
+
+    private static Stream<Arguments> givenCommaAndNewlineFollowingEachOther() {
+        return Stream.of(
+                Arguments.of("1" + NEWLINE + NEWLINE + "2,3"),
+                Arguments.of("1," + NEWLINE + "2,3"),
+                Arguments.of("1,,2,3"),
+                Arguments.of("," + NEWLINE + "2,3"),
+                Arguments.of("1,5," + NEWLINE),
+                Arguments.of("1," + NEWLINE + NEWLINE + NEWLINE + ",3"),
+                Arguments.of("1,,,,2,3")
+        );
+    }
+
+    private static Stream<Arguments> givenEntriesWithDelimiters() {
+        return Stream.of(
+                Arguments.of("//," + NEWLINE + "1,2"),
+                Arguments.of("//" + NEWLINE + NEWLINE + "1" + NEWLINE + "2"),
+                Arguments.of("//-" + NEWLINE + "1-2")
+        );
+    }
+
     @ParameterizedTest
     @MethodSource("givenCommaAndNewlineFollowingEachOther")
-    void add_should_throw_exception_if_two_delimiters_are_following_each_other(String givenCommaAndNewlineFollowingEachOther) {
+    void add_should_throw_exception_if_implicit_delimiters_are_following_each_other(String givenCommaAndNewlineFollowingEachOther) {
 
         IllegalArgumentException illegalArgumentException = Assertions.assertThrows(
                 IllegalArgumentException.class, () -> stringCalculator.add(givenCommaAndNewlineFollowingEachOther));
         Assertions.assertEquals("invalid entry : two delimiters must not follow each other", illegalArgumentException.getMessage());
 
     }
+
+    @ParameterizedTest
+    @MethodSource("givenEntriesWithDelimiters")
+    void add_should_accept_as_first_line_a_delimiter(String givenEntriesWithDelimiters) {
+
+        final int sum = stringCalculator.add(givenEntriesWithDelimiters);
+        assertThat(sum).isEqualTo(3);
+
+    }
+
 
 }
