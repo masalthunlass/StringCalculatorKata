@@ -1,3 +1,4 @@
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -12,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class StringCalculatorTest {
 
     private StringCalculator stringCalculator;
+    private static final String NEWLINE = System.lineSeparator();
 
     @BeforeEach
     void setUp() {
@@ -33,7 +35,7 @@ public class StringCalculatorTest {
     }
 
 
-    private static Stream<Arguments> givenEntries() {
+    private static Stream<Arguments> givenCommaSeparatedNumbers() {
         return Stream.of(
                 Arguments.of("2,3", 5),
                 Arguments.of("2,3,4", 9),
@@ -41,11 +43,43 @@ public class StringCalculatorTest {
         );
     }
 
+    private static Stream<Arguments> givenCommaAndNewlineFollowingEachOther() {
+        return Stream.of(
+                Arguments.of("1" + NEWLINE + NEWLINE + "2,3"),
+                Arguments.of("1," + NEWLINE + "2,3"),
+                Arguments.of("1,,2,3"),
+                Arguments.of("," + NEWLINE + "2,3"),
+                Arguments.of("1,5," + NEWLINE),
+                Arguments.of("1," + NEWLINE + NEWLINE + NEWLINE + ",3"),
+                Arguments.of("1,,,,2,3")
+        );
+    }
+
     @ParameterizedTest
-    @MethodSource("givenEntries")
+    @MethodSource("givenCommaSeparatedNumbers")
     void add_should_return_the_sum_of_given_numbers_if_given_entry_contains_comma_separated_numbers(String givenCommaSeparatedNumbers, int expectedResult) {
         final int sum = stringCalculator.add(givenCommaSeparatedNumbers);
         assertThat(sum).as("for given entry " + givenCommaSeparatedNumbers).isEqualTo(expectedResult);
+    }
+
+    @Test
+    void add_should_return_the_sum_of_given_numbers_if_entry_is_numbers_having_either_comma_or_newline_as_delimiter() {
+
+        final String givenCommaAndNewlineSeparatedNumbers = "1" + NEWLINE + "2,3";
+
+        final int sum = stringCalculator.add(givenCommaAndNewlineSeparatedNumbers);
+
+        assertThat(sum).isEqualTo(6);
+    }
+
+    @ParameterizedTest
+    @MethodSource("givenCommaAndNewlineFollowingEachOther")
+    void add_should_throw_exception_if_two_delimiters_are_following_each_other(String givenCommaAndNewlineFollowingEachOther) {
+
+        IllegalArgumentException illegalArgumentException = Assertions.assertThrows(
+                IllegalArgumentException.class, () -> stringCalculator.add(givenCommaAndNewlineFollowingEachOther));
+        Assertions.assertEquals("invalid entry : two delimiters must not follow each other", illegalArgumentException.getMessage());
+
     }
 
 }
