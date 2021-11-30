@@ -75,13 +75,6 @@ public class StringCalculatorTest {
         );
     }
 
-    private static Stream<Arguments> givenEntriesWithDelimiters() {
-        return Stream.of(
-                Arguments.of("//," + NEWLINE + "1,2"),
-                Arguments.of("//" + NEWLINE + NEWLINE + "1" + NEWLINE + "2"),
-                Arguments.of("//-" + NEWLINE + "1-2")
-        );
-    }
 
     @ParameterizedTest
     @MethodSource("givenCommaAndNewlineFollowingEachOther")
@@ -93,6 +86,15 @@ public class StringCalculatorTest {
 
     }
 
+
+    private static Stream<Arguments> givenEntriesWithDelimiters() {
+        return Stream.of(
+              /*  Arguments.of("//," + NEWLINE + "1,2"),
+                Arguments.of("//" + NEWLINE + NEWLINE + "1" + NEWLINE + "2"),*/
+                Arguments.of("//-" + NEWLINE + "1-2")
+        );
+    }
+
     @ParameterizedTest
     @MethodSource("givenEntriesWithDelimiters")
     void add_should_accept_as_first_line_a_delimiter(String givenEntriesWithDelimiters) {
@@ -100,6 +102,55 @@ public class StringCalculatorTest {
         final int sum = stringCalculator.add(givenEntriesWithDelimiters);
         assertThat(sum).isEqualTo(3);
 
+    }
+
+    private static Stream<Arguments> givenImplicitDelimiterNegativeNumbers() {
+        return Stream.of(
+                Arguments.of("1,-2"),
+                Arguments.of("-1,2"),
+                Arguments.of("-1" + NEWLINE + "2"),
+                Arguments.of("1" + NEWLINE + "-2")
+        );
+    }
+
+    private static Stream<Arguments> givenExplicitDelimiterNegativeNumbers() {
+        return Stream.of(
+                Arguments.of("//;" + NEWLINE + "1;-2"),
+                Arguments.of("//;" + NEWLINE + "-1;2"),
+                Arguments.of("//" + NEWLINE + NEWLINE + "-1" + NEWLINE + "2"),
+                Arguments.of("//," + NEWLINE + NEWLINE + "1" + NEWLINE + "-2")
+        );
+    }
+
+    private static Stream<Arguments> givenExplicitDashSeparator() {
+        return Stream.of(
+                Arguments.of("//-" + NEWLINE + "-1-2"),
+                Arguments.of("//-" + NEWLINE + "1--2")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("givenImplicitDelimiterNegativeNumbers")
+    void add_should_throw_exception_if_no_given_separator_and_negative_numbers_found(String givenImplicitDelimiterNegativeNumbers) {
+        IllegalArgumentException illegalArgumentException = Assertions.assertThrows(
+                IllegalArgumentException.class, () -> stringCalculator.add(givenImplicitDelimiterNegativeNumbers));
+        assertThat(illegalArgumentException.getMessage()).startsWith("invalid entry : negative numbers not allowed");
+    }
+
+    @ParameterizedTest
+    @MethodSource("givenExplicitDelimiterNegativeNumbers")
+    void add_should_throw_exception_if_given_explicit_separator_and_negative_numbers_found(String givenExplicitDelimiterNegativeNumbers) {
+        IllegalArgumentException illegalArgumentException = Assertions.assertThrows(
+                IllegalArgumentException.class, () -> stringCalculator.add(givenExplicitDelimiterNegativeNumbers));
+        assertThat(illegalArgumentException.getMessage()).startsWith("invalid entry : negative numbers not allowed");
+    }
+
+    @ParameterizedTest
+    @MethodSource("givenExplicitDashSeparator")
+    void add_should_throw_exception_if_explicit_dash_separator_and_negative_numbers_found(String givenExplicitDashSeparator) {
+        IllegalArgumentException illegalArgumentException = Assertions.assertThrows(
+                IllegalArgumentException.class, () -> stringCalculator.add(givenExplicitDashSeparator));
+        assertThat(illegalArgumentException.getMessage()).startsWith("invalid entry : negative numbers not allowed");
     }
 
 
