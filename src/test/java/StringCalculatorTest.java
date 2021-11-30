@@ -18,7 +18,7 @@ public class StringCalculatorTest {
 
     @BeforeEach
     void setUp() {
-        stringCalculator = new StringCalculator(new Mapper());
+        stringCalculator = new StringCalculator(new Mapper(), new FormatValidator());
     }
 
 
