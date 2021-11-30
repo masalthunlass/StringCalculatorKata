@@ -154,4 +154,27 @@ public class StringCalculatorTest {
     }
 
 
+    private static Stream<Arguments> givenImplicitDelimiterNegativeNumbersWithError() {
+        return Stream.of(
+                Arguments.of("1,-2", "[-2]"),
+                Arguments.of("-1,2", "[-1]"),
+                Arguments.of("-1,-2", "[-1 -2]"),
+                Arguments.of("-1,-2,-3", "[-1 -2 -3]"),
+                Arguments.of("//;" + NEWLINE + "1;-2", "[-2]"),
+                Arguments.of("//;" + NEWLINE + "-1;-2;-3", "[-1 -2 -3]"),
+                Arguments.of("//-" + NEWLINE + "-1-2", "[-1]"),
+                Arguments.of("//-" + NEWLINE + "1--2", "[-2]"),
+                Arguments.of("//-" + NEWLINE + "-1--2--3", "[-1 -2 -3]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("givenImplicitDelimiterNegativeNumbersWithError")
+    void add_should_exception_gives_negatives_number_when_no_given_separator_and_negative_numbers_found(String givenImplicitDelimiterNegativeNumbers, String errorMessage) {
+        IllegalArgumentException illegalArgumentException = Assertions.assertThrows(
+                IllegalArgumentException.class, () -> stringCalculator.add(givenImplicitDelimiterNegativeNumbers));
+        assertThat(illegalArgumentException.getMessage()).isEqualTo("invalid entry : negative numbers not allowed : " + errorMessage);
+    }
+
+
 }

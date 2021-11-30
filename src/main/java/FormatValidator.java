@@ -8,7 +8,7 @@ public class FormatValidator implements Function<String, String> {
     @Override
     public String apply(final String separatedNumbers) {
         validateIfNoImplicitSeparatorFollowingEachOther(separatedNumbers);
-        validateIfNotNegativeNumber(separatedNumbers);
+        validateIfNoNegativeNumber(separatedNumbers);
         return separatedNumbers;
     }
 
@@ -19,19 +19,30 @@ public class FormatValidator implements Function<String, String> {
         }
     }
 
-    private void validateIfNotNegativeNumber(String separatedNumbers) {
-        final String NEGATIVE_NUMBER_FOUND = "(-[0-9])";
+    private void validateIfNoNegativeNumber(String separatedNumbers) {
+        final String NEGATIVE_NUMBER_FOUND = "(-[0-9]+)";
         final String DASH_SEPARATOR = "^//-\\R";
+
         Pattern negativeNumberPattern = Pattern.compile(NEGATIVE_NUMBER_FOUND);
         Pattern dashSeparatorPattern = Pattern.compile(DASH_SEPARATOR);
+
         if (dashSeparatorPattern.matcher(separatedNumbers).find()) {
-            final String DASH_SEPARATOR_NEGATIVE_NUMBER_FOUND = '(' + DASH_SEPARATOR + ".+(-{2}[0-9]))|(" + DASH_SEPARATOR + "(-[0-9]))";
+            final String DASH_SEPARATOR_NEGATIVE_NUMBER_FOUND = "(?:-|(?:" + DASH_SEPARATOR + "))" + NEGATIVE_NUMBER_FOUND;
+
             negativeNumberPattern = Pattern.compile(DASH_SEPARATOR_NEGATIVE_NUMBER_FOUND);
         }
 
-        final Matcher matcher = negativeNumberPattern.matcher(separatedNumbers);
-        if (matcher.find()) {
-            throw new IllegalArgumentException("invalid entry : negative numbers not allowed");
+        Matcher matcher = negativeNumberPattern.matcher(separatedNumbers);
+        if (!matcher.find()) {
+            return;
         }
+
+        String negativesFound = matcher.group(1);
+        while (matcher.find()) {
+            negativesFound += " " + matcher.group().replace("--", "-");
+
+        }
+        throw new IllegalArgumentException("invalid entry : negative numbers not allowed : [" + negativesFound + "]");
     }
+
 }
